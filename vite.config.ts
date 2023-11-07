@@ -1,5 +1,5 @@
 import path from 'node:path'
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import Vue from '@vitejs/plugin-vue'
 import Pages from 'vite-plugin-pages'
 import AutoImport from 'unplugin-auto-import/vite'
@@ -9,37 +9,43 @@ import Unocss from 'unocss/vite'
 import { NaiveUiResolver } from 'unplugin-vue-components/resolvers'
 import { visualizer } from 'rollup-plugin-visualizer'
 
-export default defineConfig({
-  plugins: [
-    Vue(),
-    Unocss(),
-    Pages(),
-    VueMacros(),
-    AutoImport({
-      imports: ['vue', 'vue-router', 'pinia', '@vueuse/core', 'vue/macros'],
-      dts: 'src/auto-imports.d.ts',
-      dirs: ['src/composables', 'src/stores'],
-      vueTemplate: true,
-    }),
-    Components({
-      resolvers: [NaiveUiResolver()],
-      dirs: ['src/components/**'],
-      extensions: ['vue', 'tsx'],
-      dts: 'src/components.d.ts',
-    }),
-    visualizer({
-      open: true,
-      gzipSize: true,
-      brotliSize: true,
-    }),
-  ],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-    },
-  },
-  server: {
-    port: 2000,
-    host: '0.0.0.0',
-  },
-})
+export default defineConfig(({mode}) => 
+  {
+    const env = loadEnv(mode, process.cwd());
+    return {
+      base: env.VITE_BASE_PATH,
+      plugins: [
+        Vue(),
+        Unocss(),
+        Pages(),
+        VueMacros(),
+        AutoImport({
+          imports: ['vue', 'vue-router', 'pinia', '@vueuse/core', 'vue/macros'],
+          dts: 'src/auto-imports.d.ts',
+          dirs: ['src/composables', 'src/stores'],
+          vueTemplate: true,
+        }),
+        Components({
+          resolvers: [NaiveUiResolver()],
+          dirs: ['src/components/**'],
+          extensions: ['vue', 'tsx'],
+          dts: 'src/components.d.ts',
+        }),
+        visualizer({
+          open: true,
+          gzipSize: true,
+          brotliSize: true,
+        }),
+      ],
+      resolve: {
+        alias: {
+          '@': path.resolve(__dirname, './src'),
+        },
+      },
+      server: {
+        port: 2000,
+        host: '0.0.0.0',
+      },
+    }
+  }
+)
